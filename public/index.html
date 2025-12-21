@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Brekkie Battle!!!</title>
+    <title>DESAYUNO DEL SEÑOR DE LOS JUGUITOS</title>
     <style>
         /* JUVENILE STYLE SHEET */
         body {
             font-family: 'Comic Sans MS', 'Comic Sans', cursive; /* The ultimate juvenile font */
-            background: radial-gradient(circle, #ff00cc, #333399);
+            background: radial-gradient(circle, #ffcc00, #ff6600); /* Juice colors! */
             color: white;
             text-align: center;
             margin: 0;
@@ -94,18 +94,49 @@
             75% { transform: rotate(-5deg); }
             100% { transform: rotate(0deg); }
         }
+
+        .add-section {
+            background-color: rgba(0,0,0,0.2);
+            padding: 20px;
+            margin-top: 40px;
+            border-radius: 20px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #new-option-input {
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+            font-size: 1.2rem;
+            padding: 10px;
+            border-radius: 10px;
+            border: 3px solid black;
+            margin-right: 10px;
+        }
+
+        .add-section h2 {
+            color: #ffff00;
+            text-shadow: 2px 2px 0 #000;
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🥞 BEST BREKKIE EVER!!! 🥓</h1>
+    <h1>DESAYUNO DEL SEÑOR DE LOS JUGUITOS</h1>
     <p style="font-size: 1.5rem; color: #00ffcc; text-shadow: 2px 2px 0 #000;">
-        Click the buttons or u r boring!
+        Dice Kinder Gomita que vote
     </p>
 
     <div id="app" class="container">
         <!-- Items will be injected here by JS -->
         <h2>Loading yummy stuff...</h2>
+    </div>
+
+    <div class="add-section">
+        <h2>Seleccione otra opcion</h2>
+        <input type="text" id="new-option-input" placeholder="Escribe tu desayuno...">
+        <button onclick="addOption()">Añadir!</button>
     </div>
 
     <script>
@@ -135,6 +166,31 @@
                 }
             } catch (err) {
                 alert("Vote failed! Internet is acting weird!");
+            }
+        }
+
+        // Function to add a new option
+        async function addOption() {
+            const input = document.getElementById('new-option-input');
+            const name = input.value.trim();
+
+            if (name === '') {
+                alert('Escribe algo, no seas menso!');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/add-option', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                if (response.ok) {
+                    input.value = ''; // Clear input
+                    loadData(); // Refresh the UI
+                }
+            } catch (err) {
+                alert("Oops! Something went wrong adding your option!");
             }
         }
 

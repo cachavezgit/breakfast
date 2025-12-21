@@ -31,6 +31,27 @@ app.post('/api/vote', (req, res) => {
     }
 });
 
+// API: Add a new option
+app.post('/api/add-option', (req, res) => {
+    const { name } = req.body;
+
+    if (!name || name.trim() === '') {
+        return res.status(400).json({ success: false, message: 'Option name cannot be empty!' });
+    }
+
+    const newId = breakfastOptions.length > 0 ? Math.max(...breakfastOptions.map(o => o.id)) + 1 : 1;
+
+    const newOption = {
+        id: newId,
+        name: name.trim(),
+        emoji: '😋',
+        votes: 0,
+        desc: 'A new challenger!'
+    };
+    breakfastOptions.push(newOption);
+    res.status(201).json({ success: true, item: newOption });
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
     console.log('Go vote for brekkie!');
