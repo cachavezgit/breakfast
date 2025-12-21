@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brekkie Battle!!!</title>
+    <style>
+        /* JUVENILE STYLE SHEET */
+        body {
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive; /* The ultimate juvenile font */
+            background: radial-gradient(circle, #ff00cc, #333399);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: 4rem;
+            text-shadow: 5px 5px 0px #000;
+            color: #ffff00;
+            animation: wobble 2s infinite;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: #00ffcc;
+            border: 5px solid #000;
+            border-radius: 20px;
+            padding: 20px;
+            width: 200px;
+            color: black;
+            box-shadow: 10px 10px 0px #000;
+            transition: transform 0.1s;
+        }
+
+        .card:active {
+            transform: translate(5px, 5px);
+            box-shadow: 5px 5px 0px #000;
+        }
+
+        .emoji {
+            font-size: 5rem;
+            display: block;
+        }
+
+        h2 { margin: 10px 0; font-size: 1.5rem; }
+        
+        p { font-weight: bold; color: #550055; }
+
+        button {
+            background-color: #ff0066;
+            color: white;
+            font-family: inherit;
+            font-size: 1.2rem;
+            border: 3px solid black;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 50px;
+            box-shadow: 4px 4px 0px black;
+        }
+
+        button:hover {
+            background-color: #ff6699;
+            transform: rotate(-5deg) scale(1.1);
+        }
+
+        .vote-count {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333399;
+            background: white;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            margin: 10px auto;
+            border: 3px solid black;
+        }
+
+        @keyframes wobble {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(5deg); }
+            50% { transform: rotate(0deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🥞 BEST BREKKIE EVER!!! 🥓</h1>
+    <p style="font-size: 1.5rem; color: #00ffcc; text-shadow: 2px 2px 0 #000;">
+        Click the buttons or u r boring!
+    </p>
+
+    <div id="app" class="container">
+        <!-- Items will be injected here by JS -->
+        <h2>Loading yummy stuff...</h2>
+    </div>
+
+    <script>
+        const appDiv = document.getElementById('app');
+
+        // Function to fetch and display data
+        async function loadData() {
+            try {
+                const response = await fetch('/api/breakfasts');
+                const data = await response.json();
+                render(data);
+            } catch (err) {
+                appDiv.innerHTML = "<h2>UH OH! Server broke! 🤮</h2>";
+            }
+        }
+
+        // Function to handle voting
+        async function vote(id) {
+            try {
+                const response = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                if (response.ok) {
+                    loadData(); // Refresh the UI
+                }
+            } catch (err) {
+                alert("Vote failed! Internet is acting weird!");
+            }
+        }
+
+        // Render the HTML
+        function render(items) {
+            appDiv.innerHTML = ''; // Clear loading text
+            
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                card.innerHTML = `
+                    <span class="emoji">${item.emoji}</span>
+                    <h2>${item.name}</h2>
+                    <p>${item.desc}</p>
+                    <div class="vote-count">${item.votes}</div>
+                    <button onclick="vote(${item.id})">GIMME! 👇</button>
+                `;
+                appDiv.appendChild(card);
+            });
+        }
+
+        // Initial Load
+        loadData();
+    </script>
+</body>
+</html>
