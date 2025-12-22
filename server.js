@@ -52,6 +52,38 @@ app.post('/api/add-option', (req, res) => {
     res.status(201).json({ success: true, item: newOption });
 });
 
+// In-memory database for evaluations
+let evaluationOptions = [
+    { id: 1, name: 'Enchiladas Suizas', ratings: [] },
+    { id: 2, name: 'Tacos del Chava', ratings: [] },
+    { id: 3, name: "Desayuno McDonald's", ratings: [] },
+    { id: 4, name: 'Sopa de Tortilla y Pechugon', ratings: [] },
+    { id: 5, name: 'Frapuccino', ratings: [] },
+    { id: 6, name: 'Botanita', ratings: [] }
+];
+
+// API: Get evaluations
+app.get('/api/evaluations', (req, res) => {
+    const results = evaluationOptions.map(item => {
+        const sum = item.ratings.reduce((a, b) => a + b, 0);
+        const avg = item.ratings.length > 0 ? (sum / item.ratings.length).toFixed(1) : 0;
+        return { ...item, average: avg, count: item.ratings.length };
+    });
+    res.json(results);
+});
+
+// API: Submit rating
+app.post('/api/rate', (req, res) => {
+    const { id, score } = req.body;
+    const item = evaluationOptions.find(i => i.id === id);
+    if (item && score >= 0 && score <= 10) {
+        item.ratings.push(score);
+        res.json({ success: true });
+    } else {
+        res.status(400).json({ error: 'Invalid rating' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
     console.log('Go vote for brekkie!');
