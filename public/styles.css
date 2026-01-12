@@ -1,0 +1,71 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f8ff; /* AliceBlue: Fondo invernal */
+    color: #2c3e50;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    background-color: #ffffff;
+    width: 100%;
+    max-width: 800px;
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(163, 188, 201, 0.4); /* Sombra azulada fría */
+    border: 1px solid #e1f5fe;
+}
+
+h1, h2 {
+    color: #154360; /* Azul oscuro profundo */
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    background-color: #eaf2f8; /* Azul hielo muy claro */
+    border: 1px solid #d4e6f1;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: transform 0.2s ease;
+}
+
+li:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-color: #a9cce3;
+}
+
+button {
+    background-color: #2980b9; /* Azul Belice */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #1a5276; /* Azul más oscuro al pasar el mouse */
+}
+
+input {
+    padding: 10px;
+    border: 1px solid #a9cce3;
+    border-radius: 5px;
+    background-color: #fbfdff;
+}
