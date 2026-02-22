@@ -58,8 +58,9 @@ let evaluationOptions = [
     { id: 2, name: 'La Papada del Mike', ratings: [] },
     { id: 3, name: 'Tacos de Barbacoa JC', ratings: [] },
     { id: 4, name: 'Country Taco', ratings: [] },
-    { id: 5, name: 'Fruta', ratings: [] },
-    { id: 6, name: 'Botanita', ratings: [] }
+    { id: 5, name: 'Malteada de Choco Chips', ratings: [] },
+    { id: 6, name: 'Fruta', ratings: [] },
+    { id: 7, name: 'Botanita', ratings: [] }
 ];
 
 // API: Get evaluations
