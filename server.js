@@ -54,14 +54,12 @@ app.post('/api/add-option', (req, res) => {
 
 // In-memory database for evaluations
 let evaluationOptions = [
-    { id: 1, name: 'Tacos de Torerita de Cerdo', ratings: [] },
-    { id: 2, name: 'Domino\'s Pizza', ratings: [] },
-    { id: 3, name: 'Enchiladas en salsa Tlaquepaque', ratings: [] },
-    { id: 4, name: 'Piña Colada', ratings: [] },
-    { id: 5, name: 'Sushi Tu Rollo 5', ratings: [] },
-    { id: 6, name: 'Fruta', ratings: [] },
-    { id: 7, name: 'Fruta', ratings: [] },
-    { id: 8, name: 'Botanita', ratings: [] }
+    { id: 1, name: 'Hamburguesa, papas caseras y sopa de codito', ratings: [] },
+    { id: 2, name: 'Tacos del Chava', ratings: [] },
+    { id: 3, name: 'Desayuno McDonald\'s', ratings: [] },
+    { id: 4, name: 'Pizzita de la Sierra', ratings: [] },
+    { id: 5, name: 'Botanita', ratings: [] },
+    { id: 6, name: 'Fruta', ratings: [] }
 ];
 
 // API: Get evaluations
