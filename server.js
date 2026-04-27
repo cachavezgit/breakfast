@@ -1,32 +1,56 @@
 require('dotenv').config();
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'; // Oracle ADB self-signed cert
 const express = require('express');
-const oracledb = require('oracledb');
-const { getConnection } = require('./db');
+const http    = require('http');
 
-const app = express();
+const app  = express();
 const port = 3000;
+const PYTHON_PORT = 5001;
 
 app.use(express.json());
 app.use(express.static('public'));
 
-// In-memory database (resets when server restarts)
+// ---------------------------------------------------------------------------
+// Helper: call Python Oracle API
+// ---------------------------------------------------------------------------
+function pythonRequest(method, path, body = null) {
+    return new Promise((resolve, reject) => {
+        const bodyStr = body ? JSON.stringify(body) : null;
+        const options = {
+            hostname: 'localhost',
+            port: PYTHON_PORT,
+            path,
+            method,
+            headers: { 'Content-Type': 'application/json' }
+        };
+        if (bodyStr) options.headers['Content-Length'] = Buffer.byteLength(bodyStr);
+
+        const req = http.request(options, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(data) }));
+        });
+        req.on('error', reject);
+        if (bodyStr) req.write(bodyStr);
+        req.end();
+    });
+}
+
+// ---------------------------------------------------------------------------
+// VOTING (in-memory)
+// ---------------------------------------------------------------------------
 let breakfastOptions = [
     { id: 1, name: 'Tacos de Barbacoa junto al Oxxo', emoji: '🌮', votes: 0, desc: 'Super spicy & yummy!' },
     { id: 2, name: 'Tacos del Chino', emoji: '🥡', votes: 0, desc: 'Mystery meat goodness!' },
     { id: 3, name: 'Desayuno McDonalds', emoji: '🍟', votes: 0, desc: 'Greasy hashbrowns!' }
 ];
 
-// API: Get current votes
 app.get('/api/breakfasts', (req, res) => {
     res.json(breakfastOptions);
 });
 
-// API: Cast a vote
 app.post('/api/vote', (req, res) => {
     const { id } = req.body;
     const item = breakfastOptions.find(b => b.id === id);
-
     if (item) {
         item.votes += 1;
         res.json({ success: true, item });
@@ -35,140 +59,60 @@ app.post('/api/vote', (req, res) => {
     }
 });
 
-// API: Add a new option
 app.post('/api/add-option', (req, res) => {
     const { name } = req.body;
-
     if (!name || name.trim() === '') {
         return res.status(400).json({ success: false, message: 'Option name cannot be empty!' });
     }
-
     const newId = breakfastOptions.length > 0 ? Math.max(...breakfastOptions.map(o => o.id)) + 1 : 1;
-
-    const newOption = {
-        id: newId,
-        name: name.trim(),
-        emoji: '😋',
-        votes: 0,
-        desc: 'A new challenger!'
-    };
+    const newOption = { id: newId, name: name.trim(), emoji: '😋', votes: 0, desc: 'A new challenger!' };
     breakfastOptions.push(newOption);
     res.status(201).json({ success: true, item: newOption });
 });
 
 // ---------------------------------------------------------------------------
-// EVALUATIONS — Oracle DB
+// EVALUATIONS — proxied to Python Oracle API
 // ---------------------------------------------------------------------------
-
-// GET /api/evaluations — opciones de la semana activa con promedio y conteo
 app.get('/api/evaluations', async (req, res) => {
-    let conn;
     try {
-        conn = await getConnection();
-        const result = await conn.execute(
-            `SELECT o.id, o.name,
-                    COUNT(r.id)          AS "count",
-                    ROUND(AVG(r.score), 1) AS "average"
-             FROM meal_options o
-             LEFT JOIN meal_ratings r ON r.option_id = o.id
-             WHERE SYSDATE BETWEEN o.week_start AND o.week_end
-             GROUP BY o.id, o.name
-             ORDER BY o.id`,
-            [],
-            { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        res.json(result.rows);
+        const r = await pythonRequest('GET', '/evaluations');
+        res.status(r.status).json(r.body);
     } catch (err) {
         console.error('GET /api/evaluations error:', err.message);
         res.status(500).json({ error: err.message });
-    } finally {
-        if (conn) await conn.close();
     }
 });
 
-// POST /api/rate — guardar calificación
 app.post('/api/rate', async (req, res) => {
-    const { id, score } = req.body;
-    if (!id || score < 0 || score > 10) {
-        return res.status(400).json({ error: 'Invalid rating' });
-    }
-    let conn;
     try {
-        conn = await getConnection();
-        await conn.execute(
-            `INSERT INTO meal_ratings (option_id, score) VALUES (:id, :score)`,
-            { id, score },
-            { autoCommit: true }
-        );
-        res.json({ success: true });
+        const r = await pythonRequest('POST', '/rate', req.body);
+        res.status(r.status).json(r.body);
     } catch (err) {
+        console.error('POST /api/rate error:', err.message);
         res.status(500).json({ error: err.message });
-    } finally {
-        if (conn) await conn.close();
     }
 });
 
-// POST /api/options — cargar opciones de una nueva semana
-// Body: { week_start: 'YYYY-MM-DD', week_end: 'YYYY-MM-DD', options: [{ name }] }
 app.post('/api/options', async (req, res) => {
-    const { options, week_start, week_end } = req.body;
-    if (!options || !week_start || !week_end) {
-        return res.status(400).json({ error: 'options, week_start y week_end son requeridos' });
-    }
-    let conn;
     try {
-        conn = await getConnection();
-        for (const opt of options) {
-            await conn.execute(
-                `INSERT INTO meal_options (name, week_start, week_end)
-                 VALUES (:name, TO_DATE(:week_start, 'YYYY-MM-DD'), TO_DATE(:week_end, 'YYYY-MM-DD'))`,
-                { name: opt.name, week_start, week_end },
-                { autoCommit: true }
-            );
-        }
-        res.json({ success: true, inserted: options.length });
+        const r = await pythonRequest('POST', '/options', req.body);
+        res.status(r.status).json(r.body);
     } catch (err) {
+        console.error('POST /api/options error:', err.message);
         res.status(500).json({ error: err.message });
-    } finally {
-        if (conn) await conn.close();
     }
 });
 
-// GET /api/history — historial de calificaciones agrupado por semana y opción
 app.get('/api/history', async (req, res) => {
-    let conn;
     try {
-        conn = await getConnection();
-        const result = await conn.execute(
-            `SELECT o.name,
-                    TO_CHAR(o.week_start, 'YYYY-MM-DD') AS "week_start",
-                    TO_CHAR(o.week_end,   'YYYY-MM-DD') AS "week_end",
-                    COUNT(r.id)                          AS "count",
-                    ROUND(AVG(r.score), 1)               AS "average"
-             FROM meal_options o
-             LEFT JOIN meal_ratings r ON r.option_id = o.id
-             GROUP BY o.name, o.week_start, o.week_end
-             ORDER BY o.week_start DESC, o.name`,
-            [],
-            { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        res.json(result.rows);
+        const r = await pythonRequest('GET', '/history');
+        res.status(r.status).json(r.body);
     } catch (err) {
+        console.error('GET /api/history error:', err.message);
         res.status(500).json({ error: err.message });
-    } finally {
-        if (conn) await conn.close();
     }
 });
 
-app.listen(port, async () => {
+app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
-    let conn;
-    try {
-        conn = await getConnection();
-        console.log('Oracle connection OK');
-    } catch (err) {
-        console.error('Oracle connection FAILED:', err.message);
-    } finally {
-        if (conn) await conn.close();
-    }
 });
