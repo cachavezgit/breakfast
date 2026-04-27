@@ -78,6 +78,7 @@ app.get('/api/evaluations', async (req, res) => {
         );
         res.json(result.rows);
     } catch (err) {
+        console.error('GET /api/evaluations error:', err.message);
         res.status(500).json({ error: err.message });
     } finally {
         if (conn) await conn.close();
@@ -158,6 +159,15 @@ app.get('/api/history', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
+app.listen(port, async () => {
     console.log(`Server running at http://localhost:${port}`);
+    let conn;
+    try {
+        conn = await getConnection();
+        console.log('Oracle connection OK');
+    } catch (err) {
+        console.error('Oracle connection FAILED:', err.message);
+    } finally {
+        if (conn) await conn.close();
+    }
 });
