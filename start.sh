@@ -7,7 +7,7 @@ screen -S db_api -X quit 2>/dev/null
 screen -S node_server -X quit 2>/dev/null
 
 # Start Python Oracle API
-screen -dmS db_api bash -c "cd $PROJECT_DIR && python db_api.py; echo '--- PROCESS EXITED ---'; read"
+screen -dmS db_api bash -c "cd $PROJECT_DIR && ~/venv/wilsonenv/bin/python db_api.py; echo '--- PROCESS EXITED ---'; read"
 echo "db_api started in screen 'db_api'"
 
 # Start Node.js server
