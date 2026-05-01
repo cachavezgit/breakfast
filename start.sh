@@ -7,11 +7,11 @@ screen -S db_api -X quit 2>/dev/null
 screen -S node_server -X quit 2>/dev/null
 
 # Start Python Oracle API
-screen -dmS db_api bash -c "cd $PROJECT_DIR && python db_api.py"
+screen -dmS db_api bash -c "cd $PROJECT_DIR && python db_api.py; echo '--- PROCESS EXITED ---'; read"
 echo "db_api started in screen 'db_api'"
 
 # Start Node.js server
-screen -dmS node_server bash -c "cd $PROJECT_DIR && npm start"
+screen -dmS node_server bash -c "cd $PROJECT_DIR && npm start; echo '--- PROCESS EXITED ---'; read"
 echo "node_server started in screen 'node_server'"
 
 echo ""
