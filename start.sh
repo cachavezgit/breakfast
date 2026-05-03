@@ -11,7 +11,7 @@ screen -dmS db_api bash -c "cd $PROJECT_DIR && ~/venv/wilsonenv/bin/python db_ap
 echo "db_api started in screen 'db_api'"
 
 # Start Node.js server
-screen -dmS node_server bash --login -c "source ~/.nvm/nvm.sh && nvm use 16 && cd $PROJECT_DIR && npm start; echo '--- PROCESS EXITED ---'; read"
+screen -dmS node_server bash -c "cd $PROJECT_DIR && /home/wilson/.nvm/versions/node/v16.20.2/bin/node server.js; echo '--- PROCESS EXITED ---'; read"
 echo "node_server started in screen 'node_server'"
 
 echo ""
