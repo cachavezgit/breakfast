@@ -41,7 +41,8 @@ function pythonRequest(method, path, body = null) {
 let breakfastOptions = [
     { id: 1, name: 'Tacos de Barbacoa junto al Oxxo', emoji: '🌮', votes: 0, desc: 'Super spicy & yummy!' },
     { id: 2, name: 'Tacos del Chino', emoji: '🥡', votes: 0, desc: 'Mystery meat goodness!' },
-    { id: 3, name: 'Desayuno McDonalds', emoji: '🍟', votes: 0, desc: 'Greasy hashbrowns!' }
+    { id: 3, name: 'Chilaquiles', emoji: '🍳', votes: 0, desc: 'Greasy hashbrowns!' },
+    { id: 4, name: 'Burrito de Machacado', emoji: '🌯', votes: 0, desc: 'A new challenger!' }
 ];
 
 app.get('/api/breakfasts', (req, res) => {
