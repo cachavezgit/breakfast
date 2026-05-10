@@ -6,18 +6,35 @@
     <title>FOOD JUDGEMENT</title>
     <style>
         body {
-            font-family: 'Comic Sans MS', 'Comic Sans', cursive;
-            background: radial-gradient(circle, #33cc33, #006600);
-            color: white;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            color: #333;
             text-align: center;
             margin: 0;
             padding: 20px;
             min-height: 100vh;
         }
         h1 {
-            font-size: 3rem;
-            text-shadow: 4px 4px 0px #000;
-            color: #ffff00;
+            font-size: 2.5rem;
+            color: #27ae60;
+            margin-bottom: 1.5rem;
+        }
+        .nav-links {
+            margin-bottom: 2rem;
+        }
+        .nav-links a {
+            color: white;
+            font-size: 1.1rem;
+            text-decoration: none;
+            background: #34495e;
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            margin: 0 10px;
+            transition: background 0.2s;
+        }
+        .nav-links a:hover {
+            background: #2c3e50;
         }
         .container {
             display: flex;
@@ -28,18 +45,19 @@
             margin: 0 auto;
         }
         .card {
-            background-color: #fff;
-            border: 5px solid #000;
-            border-radius: 20px;
+            background-color: #ffffff;
+            border-radius: 16px;
             padding: 20px;
             width: 300px;
-            color: black;
-            box-shadow: 10px 10px 0px #000;
+            color: #444;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border: 1px solid #eaeaea;
         }
+        h2 { margin-top: 0; color: #2c3e50; }
         .score-display {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #006600;
+            color: #27ae60;
             margin: 10px 0;
         }
         .buttons-container {
@@ -47,37 +65,33 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 5px;
+            margin-bottom: 10px;
         }
         .rate-btn {
             width: 35px;
             height: 35px;
             border-radius: 50%;
-            border: 2px solid black;
-            background: #ffcc00;
+            border: 1px solid #27ae60;
+            background: #eafaf1;
+            color: #27ae60;
             cursor: pointer;
             font-weight: bold;
             font-family: inherit;
+            transition: all 0.2s;
         }
         .rate-btn:hover {
-            background: #ff9900;
-            transform: scale(1.2);
-        }
-        a {
+            background: #27ae60;
             color: white;
-            font-size: 1.5rem;
-            text-decoration: none;
-            background: black;
-            padding: 10px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-bottom: 20px;
+            transform: scale(1.1);
         }
     </style>
 </head>
 <body>
-    <h1>⚖️ JUDGE THE FOOD ⚖️</h1>
-    <a href="/">🔙 Back to Main Menu</a>
-    <a href="/history.html" style="margin-left: 10px;">📜 Historial</a>
+    <h1>Calificar Platos</h1>
+    <div class="nav-links">
+        <a href="/">Menú Principal</a>
+        <a href="/history.html">Ver Historial</a>
+    </div>
     
     <div id="app" class="container">
         <h2>Loading...</h2>
