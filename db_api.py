@@ -1,10 +1,12 @@
 from flask import Flask, request, jsonify
 import oracledb
+import os
 
 WALLET_DIRECTORY = "/opt/oracle"
-DB_USER          = "admin"
-DB_PASSWORD      = "Pa$$w0rd5678"
-DB_DSN           = "glxs3dqea9h0rmo0_high"
+DB_USER          = os.environ.get("DB_USER", "admin")
+DB_PASSWORD      = os.environ.get("DB_PASSWORD")
+WALLET_PASSWORD  = os.environ.get("WALLET_PASSWORD")
+DB_DSN           = os.environ.get("DB_DSN", "glxs3dqea9h0rmo0_high")
 
 app = Flask(__name__)
 
@@ -13,7 +15,7 @@ def get_conn():
         user=DB_USER, password=DB_PASSWORD, dsn=DB_DSN,
         config_dir=WALLET_DIRECTORY,
         wallet_location=WALLET_DIRECTORY,
-        wallet_password=DB_PASSWORD
+        wallet_password=WALLET_PASSWORD
     )
 
 def rows_as_dicts(cursor):
