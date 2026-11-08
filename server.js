@@ -36,6 +36,27 @@ function pythonRequest(method, path, body = null) {
 }
 
 // ---------------------------------------------------------------------------
+// CUSTOM URL VOTING (in-memory, keyed by opciones param)
+// ---------------------------------------------------------------------------
+const customVoteSessions = new Map();
+
+app.get('/api/custom-votes', (req, res) => {
+    const key = req.query.opciones || '';
+    res.json(customVoteSessions.get(key) || {});
+});
+
+app.post('/api/custom-vote', (req, res) => {
+    const { opciones, id } = req.body;
+    if (!opciones || id === undefined) {
+        return res.status(400).json({ error: 'Missing opciones or id' });
+    }
+    const votes = customVoteSessions.get(opciones) || {};
+    votes[id] = (votes[id] || 0) + 1;
+    customVoteSessions.set(opciones, votes);
+    res.json({ success: true, votes });
+});
+
+// ---------------------------------------------------------------------------
 // VOTING (in-memory)
 // ---------------------------------------------------------------------------
 let breakfastOptions = [
