@@ -430,13 +430,6 @@
         const opcionesParam = params.get('opciones');
         const storageKey    = 'votes_' + window.location.search;
 
-        function getVotes() {
-            try { return JSON.parse(localStorage.getItem(storageKey)) || {}; } catch { return {}; }
-        }
-        function saveVotes(v) {
-            try { localStorage.setItem(storageKey, JSON.stringify(v)); } catch {}
-        }
-
         const defaultEmojis = ['🍽️','🥘','🌮','🍕','🍔','🌯','🥗','🍜','🍱','🍣','🥙','🫔'];
 
         function parseOption(str) {
@@ -445,17 +438,25 @@
             return { emoji: null, name: str.trim() };
         }
 
-        function loadCustom(raw) {
+        async function loadCustom(raw) {
             document.getElementById('add-section').hidden = true;
-            const votes = getVotes();
+            let votes = {};
+            try {
+                const r = await fetch('/api/custom-votes?opciones=' + encodeURIComponent(opcionesParam));
+                votes = await r.json();
+            } catch {}
             const items = raw.map((r, i) => ({ id: i, ...parseOption(r), votes: votes[i] || 0 }));
             renderCustom(items, raw);
         }
 
-        function voteCustom(id, raw) {
-            const votes = getVotes();
-            votes[id] = (votes[id] || 0) + 1;
-            saveVotes(votes);
+        async function voteCustom(id, raw) {
+            try {
+                await fetch('/api/custom-vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ opciones: opcionesParam, id })
+                });
+            } catch {}
             loadCustom(raw);
         }
 
