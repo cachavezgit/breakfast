@@ -443,20 +443,23 @@
             let votes = {};
             try {
                 const r = await fetch('/api/custom-votes?opciones=' + encodeURIComponent(opcionesParam));
-                votes = await r.json();
+                if (r.ok) votes = await r.json();
             } catch {}
-            const items = raw.map((r, i) => ({ id: i, ...parseOption(r), votes: votes[i] || 0 }));
+            const items = raw.map((s, i) => ({ id: i, ...parseOption(s), votes: votes[i] || 0 }));
             renderCustom(items, raw);
         }
 
         async function voteCustom(id, raw) {
             try {
-                await fetch('/api/custom-vote', {
+                const r = await fetch('/api/custom-vote', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ opciones: opcionesParam, id })
                 });
-            } catch {}
+                if (!r.ok) throw new Error('vote failed');
+            } catch (err) {
+                console.error('voteCustom error:', err);
+            }
             loadCustom(raw);
         }
 
