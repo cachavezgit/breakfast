@@ -162,32 +162,92 @@
 </head>
 <body>
 
-    <h1>Desayuno del Señor de los Juguitos</h1>
-    <p class="subtitle">
-        Elige tu desayuno favorito
-    </p>
+    <h1 id="titulo">Desayuno del Señor de los Juguitos</h1>
+    <p class="subtitle" id="subtitulo">Elige tu desayuno favorito</p>
     <div class="nav-links">
         <a href="/evaluation.html">Calificar Platos</a>
         <a href="/history.html">Ver Historial</a>
     </div>
 
     <div id="app" class="container">
-        <!-- Items will be injected here by JS -->
         <h2>Loading yummy stuff...</h2>
     </div>
 
-    <div class="add-section">
+    <div class="add-section" id="add-section">
         <h2>¿Falta una opción?</h2>
         <div class="input-group">
-            <input type="text" id="new-option-input" placeholder="Escribe tu desayuno...">
+            <input type="text" id="new-option-input" placeholder="Escribe tu opción...">
             <button class="add-btn" onclick="addOption()">Añadir</button>
         </div>
     </div>
 
     <script>
         const appDiv = document.getElementById('app');
+        const params  = new URLSearchParams(window.location.search);
 
-        // Function to fetch and display data
+        // --- Título y subtítulo según ?tipo= ---
+        const tipo = (params.get('tipo') || 'desayuno').toLowerCase();
+        const labels = {
+            desayuno: ['Desayuno del Señor de los Juguitos', 'Elige tu desayuno favorito'],
+            comida:   ['Comida del Señor de los Juguitos',   'Elige tu comida favorita'],
+            cena:     ['Cena del Señor de los Juguitos',     'Elige tu cena favorita'],
+        };
+        const [titulo, subtitulo] = labels[tipo] || labels['desayuno'];
+        document.getElementById('titulo').textContent    = titulo;
+        document.getElementById('subtitulo').textContent = subtitulo;
+        document.title = titulo;
+
+        // --- Opciones desde URL (?opciones=Op1|Op2|Op3) o desde API ---
+        const opcionesParam = params.get('opciones');
+        const storageKey    = 'votes_' + window.location.search; // votos por URL única
+
+        function getVotes() {
+            try { return JSON.parse(localStorage.getItem(storageKey)) || {}; } catch { return {}; }
+        }
+        function saveVotes(v) {
+            try { localStorage.setItem(storageKey, JSON.stringify(v)); } catch {}
+        }
+
+        // Opciones personalizadas desde URL — votos en localStorage
+        const defaultEmojis = ['🍽️','🥘','🌮','🍕','🍔','🌯','🥗','🍜','🍱','🍣','🥙','🫔'];
+
+        function parseOption(str) {
+            const match = str.match(/^(\p{Extended_Pictographic}+)\s*/u);
+            if (match) return { emoji: match[1], name: str.slice(match[0].length).trim() };
+            return { emoji: null, name: str.trim() };
+        }
+
+        function loadCustom(raw) {
+            document.getElementById('add-section').hidden = true;
+            const votes = getVotes();
+            const items = raw.map((r, i) => ({ id: i, ...parseOption(r), votes: votes[i] || 0 }));
+            renderCustom(items, raw);
+        }
+
+        function voteCustom(id, raw) {
+            const votes = getVotes();
+            votes[id] = (votes[id] || 0) + 1;
+            saveVotes(votes);
+            loadCustom(raw);
+        }
+
+        function renderCustom(items, raw) {
+            appDiv.innerHTML = '';
+            items.forEach(item => {
+                const emoji = item.emoji || defaultEmojis[item.id % defaultEmojis.length];
+                const card  = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <span class="emoji">${emoji}</span>
+                    <h2>${item.name}</h2>
+                    <div class="vote-count">${item.votes}</div>
+                    <button onclick="voteCustom(${item.id}, ${JSON.stringify(raw)})">Votar</button>
+                `;
+                appDiv.appendChild(card);
+            });
+        }
+
+        // Opciones desde API — comportamiento original
         async function loadData() {
             try {
                 const response = await fetch('/api/breakfasts');
@@ -198,7 +258,6 @@
             }
         }
 
-        // Function to handle voting
         async function vote(id) {
             try {
                 const response = await fetch('/api/vote', {
@@ -206,47 +265,33 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id })
                 });
-                if (response.ok) {
-                    loadData(); // Refresh the UI
-                }
+                if (response.ok) loadData();
             } catch (err) {
                 alert("Vote failed! Internet is acting weird!");
             }
         }
 
-        // Function to add a new option
         async function addOption() {
             const input = document.getElementById('new-option-input');
-            const name = input.value.trim();
-
-            if (name === '') {
-                alert('Escribe algo, no seas menso!');
-                return;
-            }
-
+            const name  = input.value.trim();
+            if (name === '') { alert('Escribe algo, no seas menso!'); return; }
             try {
                 const response = await fetch('/api/add-option', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name })
                 });
-                if (response.ok) {
-                    input.value = ''; // Clear input
-                    loadData(); // Refresh the UI
-                }
+                if (response.ok) { input.value = ''; loadData(); }
             } catch (err) {
                 alert("Oops! Something went wrong adding your option!");
             }
         }
 
-        // Render the HTML
         function render(items) {
-            appDiv.innerHTML = ''; // Clear loading text
-            
+            appDiv.innerHTML = '';
             items.forEach(item => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                
                 card.innerHTML = `
                     <span class="emoji">${item.emoji}</span>
                     <h2>${item.name}</h2>
@@ -258,8 +303,13 @@
             });
         }
 
-        // Initial Load
-        loadData();
+        // --- Entrada ---
+        if (opcionesParam) {
+            const names = opcionesParam.split('|').map(s => s.trim()).filter(Boolean);
+            loadCustom(names);  // raw strings, may include leading emoji
+        } else {
+            loadData();
+        }
     </script>
 </body>
 </html>
